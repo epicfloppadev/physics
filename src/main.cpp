@@ -1,4 +1,5 @@
-#include <SFML/Graphics.hpp>
+#include "header.hpp"
+/*#include <SFML/Graphics.hpp>
 #include <vector>
 #include <iostream>
 #include <random>
@@ -45,7 +46,7 @@ void pushing()
     r.create(xPos, yPos, randomcolor, imm);
     pool.push_back(r);
 }
-
+*/
 int main()
 {
     srand(time(NULL));
