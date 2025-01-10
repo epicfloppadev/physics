@@ -1,0 +1,65 @@
+#include <SFML/Graphics.hpp>
+#include <vector>
+#include <string>
+using namespace sf;
+class fig
+{
+public:
+sf::Sprite sprite_object(texture);
+    Color color;
+    Vector2f pos;
+    void settexture(Texture texture)
+    {
+        sprite_object.setTexture(texture);
+    }
+    void set(Texture texture, Color color, Vector2f pos)
+    {
+        sprite_object.setPosition(pos);
+        sprite_object.setColor(color);
+        settexture(texture);
+    }
+};
+Texture texture;
+int loaddefault()
+{
+    if (!texture.loadFromFile("image.png", false, sf::IntRect({10, 10}, {32, 32})))
+    {
+        return -1;
+    }
+    return 1;
+}
+
+std::vector<fig> pool;
+fig x;
+void init_object(Texture texture, Color color = Color::Red, Vector2f pos = {100, 100})
+{
+    x.set(texture, color, pos);
+    pool.push_back(x);
+}
+
+int main()
+{
+    sf::RenderWindow window(sf::VideoMode({800, 600}), "My window");
+
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
+
+            if (event->is<sf::Event::Closed>())
+                window.close();
+            else if (event->is<Event::MouseButtonPressed>())
+            {
+                init_object(texture);
+            }
+        }
+
+        window.clear();
+        for (int i = 0; i < pool.size(); i++)
+        {
+            window.draw(pool[i].sprite_object);
+        }
+
+        window.display();
+    }
+}
