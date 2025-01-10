@@ -2,14 +2,15 @@
 #include <vector>
 #include <iostream>
 #include <random>
-#define WINHEIGHT 1000
-#define WINWIDTH 800
+#define WINWIDTH 1000
+#define WINHEIGHT 800
 using namespace sf;
-
+const int gravity = 10;
 class object {
 public:
     RectangleShape obj;
     Vector2f pos;
+    float mass = 0.5;
     bool physics = true;
     int momentum = 0;
     int collisioncoef = 0;
@@ -24,35 +25,49 @@ void object::create(int x, int y, Color color, bool imm) {
     obj.setFillColor(color);
     immutable = imm;
 }
-
+void grav(object &o)
+{
+    o.momentum = gravity * o.mass;
+}
 std::vector<object> pool;
 
-void pushing() {
-    object obj;
+void pushing()
+{
+    object r;
     int xPos, yPos;
-    xPos = rand() % WINHEIGHT;
-    yPos = rand() % WINWIDTH;
+    int getsizex=WINWIDTH - r.obj.getSize().x, getsizey=WINHEIGHT - r.obj.getSize().y;
+    xPos = rand() % getsizex;
+    yPos = rand() % getsizey;
     int imm = false;
     Color randomcolor = Color(rand() % 255, rand() % 255, rand() % 255);
-    obj.create(xPos, yPos, randomcolor, imm);
-    pool.push_back(obj);
+    r.create(xPos, yPos, randomcolor, imm);
+    pool.push_back(r);
 }
 
-int main() {
+int main()
+{
     srand(time(NULL));
-    sf::RenderWindow window(sf::VideoMode({WINHEIGHT, WINWIDTH}), "My window");
-
-    while (window.isOpen()) {
-        while (const std::optional event = window.pollEvent()) {
+    sf::RenderWindow window(sf::VideoMode({WINWIDTH, WINHEIGHT}), "Physics");
+    window.setFramerateLimit(60);
+    while (window.isOpen())
+    {
+        while (const std::optional event = window.pollEvent())
+        {
             if (event->is<sf::Event::Closed>())
                 window.close();
-            else if (event->is<Event::MouseButtonPressed>()) {
+            else if (event->is<Event::MouseButtonPressed>())
+            {
                 pushing();
+                grav(pool[pool.size()-1]);
             }
         }
         window.clear(Color::Black);
-        for (int i = 0; i < pool.size(); i++) {
+        for (int i = 0; i < pool.size(); i++)
+        {
+            pool[i].obj.setPosition(pool[i].obj.getPosition()+Vector2f(0, float(pool[i].momentum)));
             window.draw(pool[i].obj);
+            if(pool[i].obj.getPosition().y>WINHEIGHT) pool.erase(pool.begin()+i);
+            std::cout<<pool[i].obj.getPosition().y<<'\n';
         }
         window.display();
     }
