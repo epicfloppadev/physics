@@ -1,74 +1,123 @@
 #include <SFML/Graphics.hpp>
-#include <vector>
-#include <iostream>
-#include <random>
+#include <bits/stdc++.h>
 #define WINWIDTH 1000
 #define WINHEIGHT 800
-#define part 10
+#define part 5
+#define m !o1.immoble
 using namespace sf;
-const int gravity = 10;
-class object
+const float ct = 0.8;
+const float gravity = 0.1;
+Texture tex1("Image/red.png"), tex2("Image/yellow.png");
+sf::Color getRandomColor()
+{
+    return sf::Color(
+        rand() % 256,
+        rand() % 256,
+        rand() % 256);
+}
+class Object
 {
 public:
-    RectangleShape obj;
-    Vector2f pos;
-    float mass = 0.5;
-    bool physics = true;
-    float momentumx=0,momentumy = 0;
-    int collisioncoef = 0;
-    bool immutable = false;
-    object() : obj(Vector2f(100.f, 100.f)) {}
-    void create(int x, int y, Color color, bool imm, int Xsize, int Ysize);
+    Sprite sprite;
+    float mass = 1;
+    float vx = 0.1f, vy = 0.1f; // suficient pentru coliziuni
+    bool immobile = false;
+    Object(const Texture &tex = tex1, float x = 0.f, float y = 0.f) : sprite(tex)
+    {
+        sprite.setPosition({x, y});
+    }
+
+    void draw(RenderWindow &window)
+    {
+        window.draw(sprite);
+    }
+
+    bool con(Vector2f point) // contains point
+    {
+        return sprite.getGlobalBounds().contains(point);
+    }
+    bool con2(const Object &other) const // contains 4 sprite
+    {
+        auto rect1 = sprite.getGlobalBounds();
+        auto rect2 = other.sprite.getGlobalBounds();
+        return rect1.findIntersection(rect2).has_value();
+    }
+    void setTexture(const Texture &tex)
+    {
+        sprite.setTexture(tex);
+    }
 };
-
-void object::create(int x, int y, Color color, bool imm = true, int Xsize=100, int Ysize=100)
+void drawvec(std::vector<Object> &v, sf::RenderWindow &window)
 {
-    pos = Vector2f(static_cast<float>(x), static_cast<float>(y));
-    obj.setSize({static_cast<float>(Xsize), static_cast<float>(Ysize)});
-    std::cout<<pos.y;
-    obj.setPosition(pos);
-    obj.setFillColor(color);
-    immutable = imm;
-}
-void grav(object &o)
-{
-    o.momentumy = gravity * (1-o.immutable);
-}
-std::vector<object> pool;
-void pushing(int Xpos = -1, int Ypos = -1, int Xsize = 100, int Ysize = 100, bool imm = false)
-{
-    object r;
-
-    int getsizex = WINWIDTH - Xsize;
-    int getsizey = WINHEIGHT - Ysize;
-
-    if (Xpos == -1 || Ypos == -1)
+    window.draw(v[0].sprite);
+    for (auto i = 1; i < v.size(); i++)
     {
-        Xpos = rand() % getsizex;
-        Ypos = rand() % getsizey;
+        v[i].vy += gravity;
+        v[i].sprite.move({!v[i].immobile * v[i].vx, !v[i].immobile * v[i].vy});
+        window.draw(v[i].sprite);
+    }
+}
+// folosit chatgpt pe ideea mea asa ca na
+void ryc(Object &o1, Object &o2)
+{
+    constexpr float ct = 0.8f;
+    constexpr float epsilon = 0.1f;
+
+    const auto &rect1 = o1.sprite.getGlobalBounds();
+    const auto &rect2 = o2.sprite.getGlobalBounds();
+
+    const auto intersection = rect1.findIntersection(rect2);
+    if (!intersection.has_value())
+        return;
+
+    const float overlapY = intersection->size.y;
+
+    float moveAmount = (overlapY / 2.0f) + epsilon;
+
+    if (rect1.position.y < rect2.position.y)
+    {
+        if (!o1.immobile)
+            o1.sprite.move(sf::Vector2f(0.f, -moveAmount));
+        if (!o2.immobile)
+            o2.sprite.move(sf::Vector2f(0.f, moveAmount));
+    }
+    else
+    {
+        if (!o1.immobile)
+            o1.sprite.move(sf::Vector2f(0.f, moveAmount));
+        if (!o2.immobile)
+            o2.sprite.move(sf::Vector2f(0.f, -moveAmount));
     }
 
-    Color randomcolor(rand() % 256, rand() % 256, rand() % 256);
+    const float m1 = o1.mass;
+    const float m2 = o2.mass;
+    const float v1y = o1.vy;
+    const float v2y = o2.vy;
 
-    r.create(Xpos, Ypos, randomcolor, imm, Xsize, Ysize);
+    const float new_v1y = (v1y * (m1 - m2) + 2.f * m2 * v2y) / (m1 + m2);
+    const float new_v2y = (v2y * (m2 - m1) + 2.f * m1 * v1y) / (m1 + m2);
 
-
-    pool.push_back(r);
+    if (!o1.immobile)
+        o1.vy = new_v1y * ct;
+    if (!o2.immobile)
+        o2.vy = new_v2y * ct;
 }
-
-bool colision(object &o1, object &o2)
+// la fel
+void rxc(Object &o1, Object &o2)
 {
-    if(o1.obj.getGlobalBounds().findIntersection(o2.obj.getGlobalBounds())) 
+    float m1 = o1.mass, m2 = o2.mass;
+    float v1x = o1.vx, v2x = o2.vx;
+
+    float x1 = o1.sprite.getPosition().x;
+    float x2 = o2.sprite.getPosition().x;
+
+    // Only respond if moving toward each other horizontally
+    if ((v1x - v2x) * (x1 - x2) < 0)
     {
-        if(o1.obj.getPosition().y<o2.obj.getPosition().y)
-        {
-            o1.obj.setPosition(Vector2f(o1.obj.getPosition().x, o2.obj.getPosition().y) + Vector2f(0,float(-o1.obj.getSize().y)));
-        }
-        else
-        {
-            o2.obj.setPosition(Vector2f(o2.obj.getPosition().x, o1.obj.getPosition().y)+ Vector2f(0,float(-o2.obj.getSize().y)));
-        }
-        return 1;
+        float new_v1x = (v1x * (m1 - m2) + 2 * m2 * v2x) / (m1 + m2);
+        float new_v2x = (v2x * (m2 - m1) + 2 * m1 * v1x) / (m1 + m2);
+
+        o1.vx = new_v1x * (1 - o1.immobile) * ct;
+        o2.vx = new_v2x * (1 - o2.immobile) * ct;
     }
-    return 0;
 }
