@@ -27,8 +27,8 @@ int main()
                 Vector2i mousePos = Mouse::getPosition(window);
                 Vector2f mousePosF(static_cast<double>(mousePos.x), static_cast<double>(mousePos.y));
                 Object obt(tex1, mousePosF.x, mousePos.y);
-                obt.vx = 0 * rand() % 10 * (1 - 2 * int(rand() % 2));
-                obt.vy = 0 * rand() % 10 * (1 - 2 * int(rand() % 2));
+                obt.vx = rand() % 10 * (1 - 2 * int(rand() % 2));
+                obt.vy = rand() % 10 * (1 - 2 * int(rand() % 2));
                 obj.push_back(obt);
             }
         }
