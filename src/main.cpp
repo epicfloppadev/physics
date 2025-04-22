@@ -11,7 +11,7 @@ int main()
 
     std::vector<Object> obj; // 20 for failsafe
     Object obt(tex1, 0, 799);
-    obt.mass = 1000000000;
+    obt.mass = 1000000000000;
     obt.sprite.setScale({10, 8});
     obt.immobile = true;
     obj.push_back(obt);
@@ -25,16 +25,16 @@ int main()
             else if (event->is<Event::MouseButtonPressed>())
             {
                 Vector2i mousePos = Mouse::getPosition(window);
-                Vector2f mousePosF(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                Vector2f mousePosF(static_cast<double>(mousePos.x), static_cast<double>(mousePos.y));
                 Object obt(tex1, mousePosF.x, mousePos.y);
-                obt.vx = rand() % 5 * (1 - 2 * int(rand() % 2));
-                obt.vy = rand() % 5 * (1 - 2 * int(rand() % 2));
+                obt.vx = 0 * rand() % 10 * (1 - 2 * int(rand() % 2));
+                obt.vy = 0 * rand() % 10 * (1 - 2 * int(rand() % 2));
                 obj.push_back(obt);
             }
         }
 
         window.clear();
-        drawvec(obj, window);
+        drawvec2(obj, window);
         for (int i = 0; i < obj.size(); i++)
         {
             for (int j = i + 1; j < obj.size(); j++)
@@ -49,7 +49,7 @@ int main()
                 }
             }
         }
-        
+        drawvec(obj, window);
         window.display();
     }
 
