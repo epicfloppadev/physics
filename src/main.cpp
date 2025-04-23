@@ -34,7 +34,7 @@ int main()
         }
 
         window.clear();
-        drawvec2(obj, window);
+        
         for (int i = 0; i < obj.size(); i++)
         {
             for (int j = i + 1; j < obj.size(); j++)
@@ -49,6 +49,7 @@ int main()
                 }
             }
         }
+        drawvec2(obj, window);
         drawvec(obj, window);
         window.display();
     }
